@@ -6,7 +6,13 @@ require("dotenv").config();
 const port = process.env.PORT || 5000;
 
 app.use(express.json());
-app.use(cors());
+app.use(
+  cors({
+    origin: ["http://localhost:5173", "https://coffee-tea-house-auth.web.app/"],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+    withCredentials: true,
+  })
+);
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@coffee-server-cluster.76jmgvs.mongodb.net/?retryWrites=true&w=majority&appName=coffee-server-cluster`;
 
@@ -21,9 +27,6 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
-
     const coffeeCollection = client.db("coffeeDB").collection("coffees");
 
     app.get("/coffees", async (req, res) => {
@@ -51,14 +54,10 @@ async function run() {
       res.send(result);
     });
 
-    // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
   } finally {
-    // Ensures that the client will close when you finish/error
-    // await client.close();
   }
 }
 run().catch(console.dir);
